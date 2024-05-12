@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>WebRTC Video Call</title>
+  </head>
+  <body>
+    <h2>Local Video</h2>
+    <video id="localVideo" autoplay muted></video>
+    <h2>Remote Video</h2>
+    <video id="remoteVideo" autoplay controls></video>
+    <audio id="remoteAudio" autoplay controls></audio>
+
+    <textarea id="localOffer" placeholder="Local Offer SDP"></textarea>
+    <button id="createOffer">Create Offer</button>
+    <button id="setOffer">Set Offer</button>
+
+    <textarea id="remoteOffer" placeholder="Remote Offer SDP"></textarea>
+    <button id="setAnswer">Set Answer</button>
+
+    <script src="script.js"></script>
+  </body>
+</html>
