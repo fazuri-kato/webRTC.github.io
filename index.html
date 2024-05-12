@@ -1,22 +1,25 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
   <head>
-    <title>WebRTC Video Call</title>
+    <meta charset="UTF-8" />
+    <title>Simple WebRTC Chat</title>
   </head>
   <body>
     <h2>Local Video</h2>
     <video id="localVideo" autoplay muted></video>
     <h2>Remote Video</h2>
-    <video id="remoteVideo" autoplay controls></video>
-    <audio id="remoteAudio" autoplay controls></audio>
+    <video id="remoteVideo" autoplay></video>
 
-    <textarea id="localOffer" placeholder="Local Offer SDP"></textarea>
-    <button id="createOffer">Create Offer</button>
-    <button id="setOffer">Set Offer</button>
+    <h3>Offer/Answer SDP</h3>
+    <textarea id="sdpTextarea" rows="10" cols="70"></textarea><br />
+    <button onclick="createOffer()">Create Offer</button>
+    <button onclick="setRemoteSDP()">Set Remote SDP</button>
+    <button onclick="setAnswer()">Set Answer SDP</button>
 
-    <textarea id="remoteOffer" placeholder="Remote Offer SDP"></textarea>
-    <button id="setAnswer">Set Answer</button>
-
+    <h3>Candidate</h3>
+    <p id="candidate"></p>
+    <textarea id="candidateTextarea" rows="10" cols="70"></textarea><br />
+    <button onclick="setCandidate()">Set Candidate</button>
     <script src="script.js"></script>
   </body>
 </html>

@@ -1,86 +1,104 @@
-const localVideo = document.getElementById("localVideo");
-const remoteVideo = document.getElementById("remoteVideo");
-const remoteAudio = document.getElementById("remoteAudio");
+let localVideo = document.getElementById("localVideo");
+let remoteVideo = document.getElementById("remoteVideo");
 let localStream;
-let remoteStream;
-let peerConnection;
+let peerConnection = new RTCPeerConnection();
 
-document.getElementById("createOffer").addEventListener("click", async () => {
-  console.log("on click createOffer");
-  localStream = await navigator.mediaDevices.getUserMedia({
-    video: true,
-    audio: true,
-  });
-  localVideo.srcObject = localStream;
+// ローカルメディアストリームを取得
+navigator.mediaDevices
+  .getUserMedia({ video: true, audio: true })
+  .then((stream) => {
+    localStream = stream;
+    localVideo.srcObject = localStream;
+    localStream.getTracks().forEach((track) => {
+      peerConnection.addTrack(track, localStream);
+    });
+    console.log("Local stream added.");
+  })
+  .catch((error) => console.error("MediaStream error:", error));
 
-  peerConnection = new RTCPeerConnection();
-  localStream
-    .getTracks()
-    .forEach((track) => peerConnection.addTrack(track, localStream));
+peerConnection.ontrack = function (event) {
+  remoteVideo.srcObject = event.streams[0];
+  console.log("Remote stream added. : ", event);
+};
 
-  peerConnection.onicecandidate = (event) => {
-    if (event.candidate) {
-      console.log("New ICE candidate:", event.candidate);
-    }
-  };
+peerConnection.onicecandidate = function (event) {
+  if (event.candidate) {
+    document.getElementById("candidate").textContent = JSON.stringify(
+      event.candidate
+    );
+    console.log("New ICE candidate:", event.candidate);
+  }
+};
 
-  peerConnection.ontrack = (event) => {
-    console.log("event : ", event);
-    if (event.track.kind == "audio") {
-      console.log("audio");
-      remoteAudio.srcObject = event.streams[0];
-    }
-    if (event.track.kind == "video") {
-      console.log("video");
-      remoteVideo.srcObject = event.streams[0];
-    }
-  };
+// Offerを生成し、ローカルディスクリプションとしてセット
+function createOffer() {
+  peerConnection
+    .createOffer()
+    .then((offer) => {
+      return peerConnection.setLocalDescription(offer);
+    })
+    .then(() => {
+      document.getElementById("sdpTextarea").value = JSON.stringify(
+        peerConnection.localDescription
+      );
+      console.log("Offer created and set as local description.");
+    })
+    .catch((error) => console.error("Failed to create offer:", error));
+}
 
-  const offer = await peerConnection.createOffer();
-  await peerConnection.setLocalDescription(offer);
-  document.getElementById("localOffer").value = JSON.stringify(offer);
-});
+// リモートのSDPをセットし、Answerを生成
+function setRemoteSDP() {
+  const remoteDescription = JSON.parse(
+    document.getElementById("sdpTextarea").value
+  );
+  peerConnection
+    .setRemoteDescription(new RTCSessionDescription(remoteDescription))
+    .then(() => {
+      console.log("Remote description set. Generating answer...");
+      return peerConnection.createAnswer();
+    })
+    .then((answer) => {
+      return peerConnection.setLocalDescription(answer);
+    })
+    .then(() => {
+      document.getElementById("sdpTextarea").value = JSON.stringify(
+        peerConnection.localDescription
+      );
+      console.log(
+        "Answer created and set as local description. Copy this SDP back to the initiator."
+      );
+    })
+    .catch((error) => console.error("Failed to create answer:", error));
+}
 
-document.getElementById("setOffer").addEventListener("click", async () => {
-  console.log("on click setOffer");
-  const offer = JSON.parse(document.getElementById("remoteOffer").value);
-  peerConnection = new RTCPeerConnection();
-  localStream = await navigator.mediaDevices.getUserMedia({
-    video: true,
-    audio: true,
-  });
-  localVideo.srcObject = localStream;
+// リモートのanswerSDPをセット
+function setAnswer() {
+  const remoteDescription = JSON.parse(
+    document.getElementById("sdpTextarea").value
+  );
+  peerConnection
+    .setRemoteDescription(new RTCSessionDescription(remoteDescription))
+    .then(() => {
+      console.log("answer Remote description set.");
+    })
+    .catch((error) => console.error("Failed set answer:", error));
+}
 
-  localStream
-    .getTracks()
-    .forEach((track) => peerConnection.addTrack(track, localStream));
+peerConnection.oniceconnectionstatechange = function () {
+  console.log(
+    `ICE connection state change: ${peerConnection.iceConnectionState}`
+  );
+};
 
-  peerConnection.ontrack = (event) => {
-    console.log("event : ", event);
-    if (event.track.kind == "audio") {
-      console.log("audio");
-      remoteAudio.srcObject = event.streams[0];
-    }
-    if (event.track.kind == "video") {
-      console.log("video");
-      remoteVideo.srcObject = event.streams[0];
-    }
-  };
-
-  peerConnection.onicecandidate = (event) => {
-    if (event.candidate) {
-      console.log("New ICE candidate:", event.candidate);
-    }
-  };
-
-  await peerConnection.setRemoteDescription(offer);
-  const answer = await peerConnection.createAnswer();
-  await peerConnection.setLocalDescription(answer);
-  document.getElementById("localOffer").value = JSON.stringify(answer);
-});
-
-document.getElementById("setAnswer").addEventListener("click", async () => {
-  console.log("on click setAnswer");
-  const answer = JSON.parse(document.getElementById("localOffer").value);
-  await peerConnection.setRemoteDescription(answer);
-});
+// 相手からもらったcandidateをセット
+function setCandidate() {
+  const remoteCandidate = JSON.parse(
+    document.getElementById("candidateTextarea").value
+  );
+  peerConnection
+    .addIceCandidate(new RTCIceCandidate(remoteCandidate))
+    .then(() => {
+      console.log("set candidate");
+    })
+    .catch((e) => console.error("Faild set candidate: ", e));
+}
