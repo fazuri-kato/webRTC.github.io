@@ -2,6 +2,7 @@ let localVideo = document.getElementById("localVideo");
 let remoteVideo = document.getElementById("remoteVideo");
 let localStream;
 let peerConnection = new RTCPeerConnection();
+let candidates = [];
 
 // ローカルメディアストリームを取得
 navigator.mediaDevices
@@ -23,12 +24,19 @@ peerConnection.ontrack = function (event) {
 
 peerConnection.onicecandidate = function (event) {
   if (event.candidate) {
-    document.getElementById("candidate").textContent = JSON.stringify(
-      event.candidate
-    );
+    let candidate = JSON.stringify(event.candidate);
+    candidates.push(candidate);
+    document.getElementById("candidate").textContent =
+      JSON.stringify(candidates);
     console.log("New ICE candidate:", event.candidate);
   }
 };
+
+// 原因は詳しくわからないが初回offerCreate時にcandidate情報がなく、
+// 2回目以降に含まれるので一回捨てで作成
+// peerConnection.createOffer().then((offer) => {
+//   return peerConnection.setLocalDescription(offer);
+// });
 
 // Offerを生成し、ローカルディスクリプションとしてセット
 function createOffer() {
@@ -90,15 +98,18 @@ peerConnection.oniceconnectionstatechange = function () {
   );
 };
 
-// 相手からもらったcandidateをセット
-function setCandidate() {
-  const remoteCandidate = JSON.parse(
+// 相手からもらったcandidateのリストをセット
+function setCandidates() {
+  const remoteCandidates = JSON.parse(
     document.getElementById("candidateTextarea").value
   );
-  peerConnection
-    .addIceCandidate(new RTCIceCandidate(remoteCandidate))
-    .then(() => {
-      console.log("set candidate");
-    })
-    .catch((e) => console.error("Faild set candidate: ", e));
+  remoteCandidates.forEach((remoteCandidate) => {
+    console.log("candidate : ", remoteCandidate);
+    peerConnection
+      .addIceCandidate(new RTCIceCandidate(remoteCandidate))
+      .then(() => {
+        console.log("set candidate");
+      })
+      .catch((e) => console.error("Faild set candidate: ", e));
+  });
 }
