@@ -46,7 +46,7 @@ function createOffer() {
       return peerConnection.setLocalDescription(offer);
     })
     .then(() => {
-      document.getElementById("sdpTextarea").value = JSON.stringify(
+      document.getElementById("localSdpTextarea").value = JSON.stringify(
         peerConnection.localDescription
       );
       console.log("Offer created and set as local description.");
@@ -57,7 +57,7 @@ function createOffer() {
 // リモートのSDPをセットし、Answerを生成
 function setRemoteSDP() {
   const remoteDescription = JSON.parse(
-    document.getElementById("sdpTextarea").value
+    document.getElementById("remoteSdpTextarea").value
   );
   peerConnection
     .setRemoteDescription(new RTCSessionDescription(remoteDescription))
@@ -69,7 +69,7 @@ function setRemoteSDP() {
       return peerConnection.setLocalDescription(answer);
     })
     .then(() => {
-      document.getElementById("sdpTextarea").value = JSON.stringify(
+      document.getElementById("localSdpTextarea").value = JSON.stringify(
         peerConnection.localDescription
       );
       console.log(
@@ -82,7 +82,7 @@ function setRemoteSDP() {
 // リモートのanswerSDPをセット
 function setAnswer() {
   const remoteDescription = JSON.parse(
-    document.getElementById("sdpTextarea").value
+    document.getElementById("remoteSdpTextarea").value
   );
   peerConnection
     .setRemoteDescription(new RTCSessionDescription(remoteDescription))

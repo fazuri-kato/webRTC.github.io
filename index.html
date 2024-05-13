@@ -20,9 +20,12 @@
     <h2>Remote Video</h2>
     <video id="remoteVideo" autoplay></video>
 
-    <h3>Offer/Answer SDP</h3>
-    <textarea id="sdpTextarea" rows="10" cols="70"></textarea><br />
+    <h3>Local SDP</h3>
+    <textarea id="localSdpTextarea" rows="10" cols="70" disabled></textarea>
+    <br />
     <button onclick="createOffer()">Create Offer</button>
+    <h3>Remote SDP</h3>
+    <textarea id="remoteSdpTextarea" rows="10" cols="70"></textarea><br />
     <button onclick="setRemoteSDP()">Set Remote SDP</button>
     <button onclick="setAnswer()">Set Answer SDP</button>
 
