@@ -105,8 +105,9 @@ function setCandidates() {
   );
   remoteCandidates.forEach((remoteCandidate) => {
     console.log("candidate : ", remoteCandidate);
+    let remoteCandidateData = JSON.parse(remoteCandidate);
     peerConnection
-      .addIceCandidate(new RTCIceCandidate(remoteCandidate))
+      .addIceCandidate(new RTCIceCandidate(remoteCandidateData))
       .then(() => {
         console.log("set candidate");
       })
